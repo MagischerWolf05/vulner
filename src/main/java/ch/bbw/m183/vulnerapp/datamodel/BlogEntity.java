@@ -7,6 +7,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -27,6 +28,7 @@ public class BlogEntity {
 	LocalDateTime createdAt;
 
 	@Column(columnDefinition = "text")
+	@NotBlank(message ="titel is mandetory")
 	String title;
 
 	@Column(columnDefinition = "text")

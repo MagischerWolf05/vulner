@@ -1,43 +1,38 @@
 package ch.bbw.m183.vulnerapp.controller;
 
-import java.util.UUID;
-
 import ch.bbw.m183.vulnerapp.datamodel.BlogEntity;
 import ch.bbw.m183.vulnerapp.service.BlogService;
-import ch.bbw.m183.vulnerapp.service.HealthService;
-import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort.Direction;
-import org.springframework.data.web.PageableDefault;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/blog")
-@RequiredArgsConstructor
+@Validated
 public class BlogController {
 
 	private final BlogService blogService;
 
-	private final HealthService healthService;
+	public BlogController(BlogService blogService) {
+		this.blogService = blogService;
+	}
 
 	@GetMapping
-	public Page<BlogEntity> getBlogs(@PageableDefault(sort = "createdAt", direction = Direction.DESC) Pageable pageable) {
+	public Page<BlogEntity> getBlogs(Pageable pageable) {
 		return blogService.getBlogs(pageable);
 	}
 
 	@PostMapping
-	public UUID createBlog(@RequestBody BlogEntity blog) {
-		return blogService.createBlog(blog);
-	}
-
-	@GetMapping("/health")
-	public String health(@RequestHeader String host) {
-		return healthService.health(host);
+	@PreAuthorize("hasRole('USER')")
+	public ResponseEntity<UUID> createBlog(@Valid @RequestBody BlogEntity blog) {
+		UUID createdBlogId = blogService.createBlog(blog);
+		return ResponseEntity.status(HttpStatus.CREATED).body(createdBlogId);
 	}
 }

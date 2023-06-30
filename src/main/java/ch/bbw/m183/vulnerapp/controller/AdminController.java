@@ -2,32 +2,39 @@ package ch.bbw.m183.vulnerapp.controller;
 
 import ch.bbw.m183.vulnerapp.datamodel.UserEntity;
 import ch.bbw.m183.vulnerapp.service.AdminService;
-import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
 
 @RestController
-@RequestMapping("/api/admin123") // noone will ever guess!
-@RequiredArgsConstructor
+@RequestMapping("/api/admin123")
+@Validated
 public class AdminController {
 
 	private final AdminService adminService;
 
-	@GetMapping("/create")
-	public UserEntity createUser(UserEntity newUser) {
+	public AdminController(AdminService adminService) {
+		this.adminService = adminService;
+	}
+
+	@PostMapping("/create")
+	@PreAuthorize("hasRole('ADMIN')")
+	public UserEntity createUser(@Valid @RequestBody UserEntity newUser) {
 		return adminService.createUser(newUser);
 	}
 
 	@GetMapping("/users")
+	@PreAuthorize("hasRole('ADMIN')")
 	public Page<UserEntity> getUsers(Pageable pageable) {
 		return adminService.getUsers(pageable);
 	}
 
-	@GetMapping("/delete/{username}")
+	@DeleteMapping("/delete/{username}")
+	@PreAuthorize("hasRole('ADMIN')")
 	public void deleteUser(@PathVariable String username) {
 		adminService.deleteUser(username);
 	}
